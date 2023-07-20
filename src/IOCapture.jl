@@ -111,12 +111,16 @@ function capture(f; rethrow::Type=Any, color::Bool=false)
         copy!(Random.default_rng(), old_rng)
     end
 
+    @debug "Redirected outputs, about to call f"
     # Run the function `f`, capturing all output that it might have generated.
     # Success signals whether the function `f` did or did not throw an exception.
     result, success, backtrace = with_logger(logger) do
         try
             yield() # avoid hang, see https://github.com/JuliaDocs/Documenter.jl/issues/2121
-            f(), true, Vector{Ptr{Cvoid}}()
+            @debug "yielded, about to call f"
+            f_val = f()
+            @debug "result of calling f" f f_val
+            f_val, true, Vector{Ptr{Cvoid}}()
         catch err
             err isa rethrow && Base.rethrow(err)
             # If we're capturing the error, we return the error object as the value.
@@ -127,9 +131,13 @@ function capture(f; rethrow::Type=Any, color::Bool=false)
             # redirect_stderr(default_stderr)
             close(pe_stdout)
             close(pe_stderr)
+            @debug "ended redirects, closed pipes"
+
             wait(buffer_redirect_task)
+            @debug "waited on buffer, end finally"
         end
     end
+    @debug "return values" value = result
     (
         value = result,
         output = String(take!(output)),

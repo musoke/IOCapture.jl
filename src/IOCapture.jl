@@ -86,9 +86,9 @@ function capture(f; rethrow::Type=Any, color::Bool=false)
         pe_stderr = pipe.in
     end
     redirect_stdout(pe_stdout)
-    redirect_stderr(pe_stderr)
+    # redirect_stderr(pe_stderr)
     # Also redirect logging stream to the same pipe
-    logger = ConsoleLogger(pe_stderr)
+    logger = ConsoleLogger(default_stderr)
 
     old_rng = nothing
     if VERSION >= v"1.7.0-DEV.1226" # JuliaLang/julia#40546
@@ -124,7 +124,7 @@ function capture(f; rethrow::Type=Any, color::Bool=false)
         finally
             # Restore the original output streams.
             redirect_stdout(default_stdout)
-            redirect_stderr(default_stderr)
+            # redirect_stderr(default_stderr)
             close(pe_stdout)
             close(pe_stderr)
             wait(buffer_redirect_task)

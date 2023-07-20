@@ -127,6 +127,7 @@ function capture(f; rethrow::Type=Any, color::Bool=false)
             redirect_stderr(default_stderr)
             close(pe_stdout)
             close(pe_stderr)
+            close(pipe.out)
             wait(buffer_redirect_task)
         end
     end
